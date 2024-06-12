@@ -743,7 +743,31 @@ def setup_authz(
             ),
         )
 
-    allow_rules.append(util.AnyEndpointMatcher(role="admin", defaultDeny=False))
+    any_endpoint_matcher = util.AnyEndpointMatcher(role="admin", defaultDeny=False)
+    old_match = any_endpoint_matcher.match
+
+    def match(self: util.AnyEndpointMatcher, ep: Any, action: Any, options: Any) -> Any:
+        import inspect
+
+        if options is None:
+            options = {}
+        try:
+            epobject, epdict = self.master.data.getEndpoint(ep)
+            for klass in inspect.getmro(epobject.__class__):
+                log.info(
+                    "matching on {klass} with action: {action}",
+                    klass=klass.__name__,
+                    action=action,
+                )
+        except:
+            pass
+        old_match(ep, action, options)
+
+    import types
+
+    any_endpoint_matcher.match = types.MethodType(match, any_endpoint_matcher)
+
+    allow_rules.append(any_endpoint_matcher)
     allow_rules.append(util.AnyControlEndpointMatcher(role="admins"))
     return util.Authz(
         roleMatchers=[
