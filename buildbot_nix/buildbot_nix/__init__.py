@@ -29,6 +29,7 @@ from buildbot.process.properties import Properties
 from buildbot.process.results import ALL_RESULTS, SUCCESS, statusToString, worst_status
 from buildbot.reporters.utils import getURLForBuildrequest
 from buildbot.schedulers.triggerable import Triggerable
+from buildbot.schedulers.timed import Periodic
 from buildbot.secrets.providers.file import SecretInAFile
 from buildbot.steps.trigger import Trigger
 from buildbot.www.authz import Authz
@@ -40,7 +41,7 @@ if TYPE_CHECKING:
     from buildbot.process.log import StreamLog
     from buildbot.www.auth import AuthBase
 
-from twisted.internet import defer
+from twisted.internet import defer, reactor
 from twisted.logger import Logger
 from twisted.python.failure import Failure
 
@@ -1887,3 +1888,20 @@ class NixConfigurator(ConfiguratorBase):
                 backends=list(backends.values()),
                 projects=succeeded_projects,
             )
+
+        config["runtime_schedulers"] = [
+            Periodic(name = "test",
+                     builderNames = [],
+                     periodicBuildTimer=60)
+        ]
+        obj = config["runtime_schedulers"][0]
+
+        def startBuild_2(self):
+            print("HELLO")
+
+            return obj.startBuild(self)
+
+        obj.startBuild = obj.instancemethod(startBuild_2, obj, None)
+
+        reactor.callFromThread(10, obj.startService())
+
