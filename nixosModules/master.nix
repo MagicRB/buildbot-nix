@@ -1028,6 +1028,8 @@ in
 
           upstream = "http://127.0.0.1:${builtins.toString config.services.buildbot-master.port}";
 
+          scope = lib.concatStringsSep " " cfg.accessMode.fullyPrivate.${fullyPrivateBackend}.scope;
+
           cookie-secure = true;
           skip-auth-route = [ "^/change_hook" ];
           api-route = [
@@ -1078,8 +1080,6 @@ in
         client_secret = "$(cat "$CREDENTIALS_DIRECTORY/client-secret")"
         cookie_secret = "$(cat "$CREDENTIALS_DIRECTORY/cookie-secret")"
         basic_auth_password = "$(cat "$CREDENTIALS_DIRECTORY/basic-auth-password")"
-        # https://github.com/oauth2-proxy/oauth2-proxy/issues/1724
-        scope = "read:user user:email repo"
         EOF
         )
       '';

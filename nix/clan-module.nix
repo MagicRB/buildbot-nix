@@ -115,7 +115,7 @@
             clan.core.vars.generators."buildbot-nix-gitea-oauth" =
               lib.mkIf
                 (
-                  settings.accessMode ? "fullyPrivate" && settings.accessMode.fullyPrivate.backend == "gitea"
+                  settings.accessMode ? "fullyPrivate" && settings.accessMode.fullyPrivate ? "gitea"
                   || settings.authBackend == "gitea"
                 )
                 {
@@ -159,7 +159,7 @@
             clan.core.vars.generators."buildbot-nix-github-oauth" =
               lib.mkIf
                 (
-                  settings.accessMode ? "fullyPrivate" && settings.accessMode.fullyPrivate.backend == "github"
+                  settings.accessMode ? "fullyPrivate" && settings.accessMode.fullyPrivate ? "github"
                   || settings.authBackend == "github"
                 )
                 {
@@ -179,6 +179,33 @@
                     type = "hidden";
                     description = ''
                       OAuth2 secret used for authenticating with GitHub as a OAuth2 client.
+                    '';
+                  };
+                };
+
+            clan.core.vars.generators."buildbot-nix-keycloak-oauth" =
+              lib.mkIf
+                (
+                  settings.accessMode ? "fullyPrivate" && settings.accessMode.fullyPrivate ? "keycloak"
+                  || settings.authBackend == ""
+                )
+                {
+                  files."oauth-id" = {
+                    secret = false;
+                  };
+
+                  prompts."oauth-id" = {
+                    persist = true;
+                    type = "line";
+                    description = ''
+                      OAuth2 ID used for authenticating with Keycloak as a OAuth2 client.
+                    '';
+                  };
+                  prompts."oauth-secret" = {
+                    persist = true;
+                    type = "hidden";
+                    description = ''
+                      OAuth2 secret used for authenticating with Keycloak as a OAuth2 client.
                     '';
                   };
                 };
@@ -242,27 +269,35 @@
                 settings.accessMode ? "fullyPrivate"
               ) config.clan.core.vars.generators."buildbot-nix-fullyPrivate".files."basic-auth-secret".path;
 
-              accessMode = lib.mkIf (settings.accessMode ? "fullyPrivate") {
-                fullyPrivate = {
-                  inherit (settings.accessMode.fullyPrivate) backend teams;
-
-                  cookieSecretFile =
-                    config.clan.core.vars.generators."buildbot-nix-fullyPrivate".files."cookie-secret".path;
-                  clientSecretFile =
+              accessMode =
+                let
+                  backend = lib.head (lib.attrNames settings.accessMode.fullyPrivate);
+                in lib.mkIf (settings.accessMode ? "fullyPrivate") {
+                  fullyPrivate = lib.mkMerge [
+                    settings.accessMode.fullyPrivate
                     {
-                      "gitea" = config.clan.core.vars.generators."buildbot-nix-gitea-oauth".files."oauth-secret".path;
-                      "github" = config.clan.core.vars.generators."buildbot-nix-github-oauth".files."oauth-secret".path;
+                      ${backend} =  {
+                        cookieSecretFile =
+                          config.clan.core.vars.generators."buildbot-nix-fullyPrivate".files."cookie-secret".path;
+                        clientSecretFile =
+                          {
+                            "gitea" = config.clan.core.vars.generators."buildbot-nix-gitea-oauth".files."oauth-secret".path;
+                            "github" = config.clan.core.vars.generators."buildbot-nix-github-oauth".files."oauth-secret".path;
+                            "keycloak" = config.clan.core.vars.generators."buildbot-nix-keycloak-oauth".files."oauth-secret".path;
+                          }
+                          .${backend};
+                        clientId = builtins.readFile (
+                          {
+                            "gitea" = config.clan.core.vars.generators."buildbot-nix-gitea-oauth".files."oauth-id".path;
+                            "github" = config.clan.core.vars.generators."buildbot-nix-github-oauth".files."oauth-id".path;
+                            "keycloak" = config.clan.core.vars.generators."buildbot-nix-keycloak-oauth".files."oauth-id".path;
+                          }
+                          .${backend}
+                        );
+                      };
                     }
-                    .${settings.accessMode.fullyPrivate.backend};
-                  clientId = builtins.readFile (
-                    {
-                      "gitea" = config.clan.core.vars.generators."buildbot-nix-gitea-oauth".files."oauth-id".path;
-                      "github" = config.clan.core.vars.generators."buildbot-nix-github-oauth".files."oauth-id".path;
-                    }
-                    .${settings.accessMode.fullyPrivate.backend}
-                  );
+                  ];
                 };
-              };
 
               cachix = lib.mkIf settings.cachix.enable {
                 enable = true;

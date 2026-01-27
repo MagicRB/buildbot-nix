@@ -65,6 +65,14 @@ mapOut {
                   '';
                 };
 
+                scope = lib.mkOption {
+                  type = lib.types.listOf lib.types.str;
+                  description = ''
+                    Scopes to ask for.
+                  '';
+                  apply = lib.uniqueStrings;
+                };
+
                 port = lib.mkOption {
                   type = lib.types.port;
                   description = ''
@@ -100,11 +108,23 @@ mapOut {
           in
           lib.types.attrTag {
             gitea = lib.mkOption {
-              type = lib.types.submodule giteaGithub;
+              type = lib.types.submodule {
+                imports = [ giteaGithub ];
+
+                config = {
+                  scope = [ "read:user" "read:email" ];
+                };
+              };
             };
 
             github = lib.mkOption {
-              type = lib.types.submodule giteaGithub;
+              type = lib.types.submodule {
+                imports = [ giteaGithub ];
+
+                config = {
+                  scope = [ "read:user" "read:email" ];
+                };
+              };
             };
 
             keycloak = lib.mkOption {
@@ -125,6 +145,10 @@ mapOut {
                       Required realm roles.
                     '';
                   };
+                };
+
+                config = {
+                  scope = ["basic" "email" "roles" "openid"];
                 };
               };
             };
