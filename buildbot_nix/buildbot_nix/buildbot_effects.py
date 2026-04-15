@@ -13,7 +13,11 @@ if TYPE_CHECKING:
 
 
 def buildbot_effects_config(
-    project: GitProject, git_url: str, worker_names: list[str], secrets: str | None
+    project: GitProject,
+    git_url: str,
+    worker_names: list[str],
+    secrets: str | None,
+    effects_extra_sandbox_paths: list[Path],
 ) -> util.BuilderConfig:
     """Builds one nix flake attribute."""
     factory = util.BuildFactory()
@@ -50,6 +54,7 @@ def buildbot_effects_config(
                     util.Property("branch"),
                     "--repo",
                     util.Property("project"),
+                    *sum(map(lambda path: ["--extra-sandbox-path", path]), []),
                     *secrets_args,
                     util.Property("command"),
                 ],

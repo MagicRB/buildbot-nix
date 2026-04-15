@@ -54,6 +54,7 @@ class ProjectConfig:
 
 def config_for_project(
     config: dict[str, Any],
+    effects_extra_sandbox_paths: list[Path],
     project: GitProject,
     project_config: ProjectConfig,
 ) -> None:

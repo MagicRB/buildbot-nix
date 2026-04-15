@@ -143,6 +143,7 @@ class NixConfigurator(ConfiguratorBase):
             try:
                 config_for_project(
                     config=config,
+                    effects_extra_sandbox_paths=self.config.effects_extra_sandbox_paths,
                     project=project,
                     project_config=ProjectConfig(
                         worker_names=worker_names,
@@ -222,9 +223,9 @@ class NixConfigurator(ConfiguratorBase):
 
         # Setup change hooks and avatar methods for backends
         for backend in backends.values():
-            config["www"]["change_hook_dialects"][backend.change_hook_name] = (
-                backend.create_change_hook()
-            )
+            config["www"]["change_hook_dialects"][
+                backend.change_hook_name
+            ] = backend.create_change_hook()
 
             avatar_method = backend.create_avatar_method()
             if avatar_method is not None:

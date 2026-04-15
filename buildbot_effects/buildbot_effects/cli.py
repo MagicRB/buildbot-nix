@@ -109,7 +109,13 @@ def run_command(args: argparse.Namespace) -> None:
         drv = next(iter(drvs.values()))
 
         secrets = json.loads(options.secrets.read_text()) if options.secrets else {}
-        run_effects(drv_path, drv, secrets=secrets, debug=options.debug)
+        run_effects(
+            drv_path,
+            drv,
+            secrets=secrets,
+            debug=options.debug,
+            extra_sandbox_paths=options.extra_sandbox_path,
+        )
 
 
 def list_schedules_command(args: argparse.Namespace) -> None:
@@ -191,8 +197,18 @@ def _add_secrets_flag(parser: argparse.ArgumentParser) -> None:
     """Add --secrets flag for commands that execute effects."""
     parser.add_argument(
         "--secrets",
-        type=Path,
+        type=list[Path],
+        default=[],
         help="Path to a json file with secrets",
+    )
+
+
+def _add_sandbox_flags(parser: argparse.ArgumentParser) -> None:
+    """Add --extra-sandbox-path flag."""
+    parser.add_argument(
+        "--extra-sandbox-path",
+        type=Path,
+        help="Path that should be included in the sandbox from the host.",
     )
 
 
@@ -233,6 +249,7 @@ def parse_args() -> argparse.Namespace:
     )
     _add_common_flags(run_parser)
     _add_secrets_flag(run_parser)
+    _add_sandbox_flags(run_parser)
     run_parser.set_defaults(func=run_command)
     run_parser.add_argument(
         "effect",
@@ -257,6 +274,7 @@ def parse_args() -> argparse.Namespace:
     )
     _add_common_flags(run_scheduled_parser)
     _add_secrets_flag(run_scheduled_parser)
+    _add_sandbox_flags(run_scheduled_parser)
     run_scheduled_parser.set_defaults(func=run_scheduled_command)
     run_scheduled_parser.add_argument(
         "schedule_name",

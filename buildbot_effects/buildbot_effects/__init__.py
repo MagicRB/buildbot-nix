@@ -287,12 +287,10 @@ def pipe() -> Iterator[tuple[IO[str], IO[str]]]:
 def run_effects(
     drv_path: str,
     drv: dict[str, Any],
-    secrets: dict[str, Any] | None = None,
-    *,
+    secrets: dict[str, Any],
+    extra_sandbox_paths: list[Path],
     debug: bool = False,
 ) -> None:
-    if secrets is None:
-        secrets = {}
     builder = drv["builder"]
     args = drv["args"]
     sandboxed_cmd = [
@@ -348,6 +346,7 @@ def run_effects(
         "--ro-bind",
         "/nix/store",
         "/nix/store",
+        *sum(map(extra_sandbox_paths, lambda path: ["--ro-bind", path, path]), []),
         "--hostname",
         "hercules-ci",
         "--bind",

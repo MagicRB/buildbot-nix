@@ -25,6 +25,7 @@ def buildbot_effects_scheduled_config(
     git_url: str,
     worker_names: list[str],
     secrets: str | None,
+    effects_extra_sandbox_paths: list[Path],
 ) -> BuilderConfig:
     """Builder for running scheduled effects.
 
@@ -69,6 +70,7 @@ def buildbot_effects_scheduled_config(
                     project.default_branch,
                     "--repo",
                     util.Property("project"),
+                    *sum(map(lambda path: ["--extra-sandbox-path", path]), []),
                     *secrets_args,
                     util.Property("schedule_name"),
                     util.Property("effect_name"),
