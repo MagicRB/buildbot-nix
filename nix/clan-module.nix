@@ -276,7 +276,7 @@
                   fullyPrivate = lib.mkMerge [
                     settings.accessMode.fullyPrivate
                     {
-                      ${backend} =  {
+                      ${backend} = {
                         cookieSecretFile =
                           config.clan.core.vars.generators."buildbot-nix-fullyPrivate".files."cookie-secret".path;
                         clientSecretFile =
