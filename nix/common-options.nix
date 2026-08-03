@@ -44,27 +44,6 @@ mapOut {
           let
             common = {
               options = {
-                cookieSecretFile = lib.mkOption {
-                  type = lib.types.path;
-                  description = ''
-                    Path to a file containing the cookie secret.
-                  '';
-                };
-
-                clientSecretFile = lib.mkOption {
-                  type = lib.types.path;
-                  description = ''
-                    Path to a file containing the client secret.
-                  '';
-                };
-
-                clientId = lib.mkOption {
-                  type = lib.types.str;
-                  description = ''
-                    Client secret used for OAuth2 authentication.
-                  '';
-                };
-
                 scope = lib.mkOption {
                   type = lib.types.listOf lib.types.str;
                   description = ''

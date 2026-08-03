@@ -426,6 +426,57 @@ in
         };
       };
 
+      accessMode = lib.mkOption {
+        type = lib.types.attrTag {
+          fullyPrivate = lib.mkOption {
+            type =
+              let
+                common = {
+                  cookieSecretFile = lib.mkOption {
+                    type = lib.types.path;
+                    description = ''
+                      Path to a file containing the cookie secret.
+                    '';
+                  };
+
+                  clientSecretFile = lib.mkOption {
+                    type = lib.types.path;
+                    description = ''
+                      Path to a file containing the client secret.
+                    '';
+                  };
+
+                  clientId = lib.mkOption {
+                    type = lib.types.str;
+                    description = ''
+                      Client secret used for OAuth2 authentication.
+                    '';
+                  };
+                };
+              in
+                lib.types.attrTag {
+                  gitea = lib.mkOption {
+                    type = lib.types.submodule {
+                      options =  common;
+                    };
+                  };
+
+                  github = lib.mkOption {
+                    type = lib.types.submodule {
+                      options =  common;
+                    };
+                  };
+
+                  keycloak = lib.mkOption {
+                    type = lib.types.submodule {
+                      options =  common;
+                    };
+                  };
+                };
+          };
+        };
+      };
+
       pullBased = {
         repositories = lib.mkOption {
           default = { };
