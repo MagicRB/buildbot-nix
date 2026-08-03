@@ -1028,7 +1028,7 @@ in
 
           upstream = "http://127.0.0.1:${builtins.toString config.services.buildbot-master.port}";
 
-          scope = lib.concatStringsSep " " cfg.accessMode.fullyPrivate.${fullyPrivateBackend}.scope;
+          scope = lib.concatStringsSep " " (getAttrTag cfg.accessMode.fullyPrivate).scope;
 
           cookie-secure = true;
           skip-auth-route = [ "^/change_hook" ];
